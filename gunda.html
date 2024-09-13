@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phone Tools</title>
+<style>
+    /* General reset */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Helvetica Neue', Arial, sans-serif;
+        background-color: #f5f7fa;
+        min-height: 100vh;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .tabs {
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .tab-button {
+        padding: 10px 20px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        background-color: #007bff;
+        color: white;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .tab-button.active, .tab-button:hover {
+        background-color: #0056b3;
+    }
+
+    .container {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        max-width: 1200px;
+        width: 100%;
+        justify-content: center;
+        gap: 20px;
+        padding: 20px;
+    }
+
+    .section {
+        background: #ffffff;
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        max-width: 100%;
+        width: 100%;
+        text-align: center;
+        flex: 1;
+        display: none; /* Hide sections by default */
+    }
+
+    .section.active {
+        display: block; /* Show active section */
+    }
+
+    input[type="text"], textarea, input[type="number"] {
+        margin-bottom: 15px;
+        padding: 10px;
+        width: 100%;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 16px;
+    }
+
+    button {
+        padding: 10px 20px;
+        margin: 5px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    button:hover {
+        background-color: #0056b3;
+    }
+
+    .result-container {
+        margin-top: 20px;
+        padding: 10px;
+        background-color: #f1f1f1;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        width: 100%;
+        height: 150px;
+        overflow-y: auto;
+        word-break: break-word;
+        white-space: pre-wrap; /* Preserve white spaces and new lines */
+    }
+
+    .download-links {
+        margin-top: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .download-links a {
+        margin: 5px;
+        padding: 10px;
+        background-color: #3498db;
+        color: white;
+        text-decoration: none;
+        font-size: 16px;
+        border-radius: 8px;
+        transition: background-color 0.3s ease;
+    }
+
+    .download-links a:hover {
+        background-color: #2980b9;
+    }
+
+    .copy-button {
+        display: block;
+        margin-top: 10px;
+        background-color: #28a745;
+    }
+
+    .copy-button:hover {
+        background-color: #218838;
+    }
+
+    @media (max-width: 768px) {
+        .container {
+            flex-direction: column;
+        }
+
+        .section {
+            width: 100%;
+        }
+    }
+</style>
+</head>
+<body>
+<div class="tabs">
+    <div class="tab-button active" onclick="showTab(1)">1</div>
+    <div class="tab-button" onclick="showTab(2)">2</div>
+    <div class="tab-button" onclick="showTab(3)">3</div>
+</div>
+
+<div class="container">
+    <!-- Phone Number Converter -->
+    <div class="section active" id="tab1">
+        <h1>Phone Number Converter</h1>
+        <label for="inputNumbers">Enter phone numbers:</label>
+        <input type="text" id="inputNumbers" placeholder="Enter phone numbers separated by commas or spaces">
+
+        <label for="separator">Enter Separator:</label>
+        <input type="text" id="separator" placeholder="Enter custom separator" value=",">
+
+        <button onclick="convertNumbers()">Convert</button>
+        <div class="result-container" id="result"></div>
+        <button id="copyButton" class="copy-button" onclick="copyToClipboard()" style="display:none;">Copy</button>
+    </div>
+
+    <!-- Number Cleaner -->
+    <div class="section" id="tab2">
+        <h1>Number Cleaner</h1>
+        <textarea id="rawData" placeholder="Enter raw phone numbers here, separated by tabs or spaces"></textarea>
+        <button onclick="cleanNumbers()">Convert</button>
+        <div class="result-container" id="cleanResult"></div>
+        <button id="cleanCopyButton" class="copy-button" onclick="copyCleanToClipboard()" style="display:none;">Copy</button>
+    </div>
+
+    <!-- VCF Maker -->
+    <div class="section" id="tab3">
+        <h1>VCF Maker</h1>
+        <form id="vcfForm">
+            <label for="numbers">Enter Mobile Numbers (comma-separated or one per line):</label>
+            <textarea id="numbers" name="numbers" required></textarea>
+            <label for="adminNumbers">Enter Admin Numbers (comma-separated or one per line):</label>
+            <textarea id="adminNumbers" name="adminNumbers" required></textarea>
+            <label for="navyNumbers">Enter Navy Numbers (comma-separated or one per line):</label>
+            <textarea id="navyNumbers" name="navyNumbers" required></textarea>
+            <label for="startingName">Enter Contacts Name:</label>
+            <input type="text" id="startingName" name="startingName" required>
+            <label for="filename">Enter Filename:</label>
+            <input type="text" id="filename" name="filename" required>
+            <label for="numParts">Number of Parts:</label>
+            <input type="number" id="numParts" name="numParts" min="1" value="1" required>
+            <label for="contactsPerPart">Contacts Per Part:</label>
+            <input type="number" id="contactsPerPart" name="contactsPerPart" min="1" value="100" required>
+            <button type="submit">Generate VCF</button>
+        </form>
+        <p id="numContactsEntered">0 contacts entered.</p>
+        <div class="download-links" id="downloadLinks"></div>
+        <button id="downloadAllButton" style="display:none;" onclick="downloadAll()">Download All</button>
+    </div>
+</div>
+
+<script>
+// Show tab based on the number
+function showTab(tabNumber) {
+    document.querySelectorAll('.section').forEach(section => {
+        section.classList.remove('active');
+    });
+    document.getElementById(`tab${tabNumber}`).classList.add('active');
+
+    document.querySelectorAll('.tab-button').forEach(button => {
+        button.classList.remove('active');
+    });
+    document.querySelector(`.tab-button:nth-child(${tabNumber})`).classList.add('active');
+}
+
+// Phone Number Converter
+function convertNumbers() {
+    var inputNumbers = document.getElementById("inputNumbers").value;
+    var separator = document.getElementById("separator").value.trim();
+
+    if (separator === '') {
+        separator = ',';
+    }
+
+    var cleanedNumbers = inputNumbers.replace(/[()\s-]/g, '');
+    var numbersArray = cleanedNumbers.split(separator).filter(num => num.length > 0);
+
+    var convertedNumbers = numbersArray.join('\n');
+    document.getElementById("result").innerText = convertedNumbers;
+    document.getElementById("copyButton").style.display = 'inline-block';
+}
+
+function copyToClipboard() {
+    var resultText = document.getElementById("result").innerText;
+    var tempInput = document.createElement("textarea");
+    tempInput.style.position = "absolute";
+    tempInput.style.left = "-9999px";
+    tempInput.value = resultText;
+    document.body.appendChild(tempInput);
+    tempInput.select();
+    document.execCommand("copy");
+    document.body.removeChild(tempInput);
+    alert("Copied to clipboard!");
+}
+
+// Number Cleaner
+function cleanNumbers() {
+    var rawData = document.getElementById("rawData").value;
+    var numbers = rawData.split(/\s+/).filter(num => num.trim().length > 0);
+
+    var seen = new Map();
+    numbers.forEach(num => {
+        if (!seen.has(num)) {
+            seen.set(num, true);
+        }
+    });
+
+    var uniqueNumbers = Array.from(seen.keys());
+    document.getElementById("cleanResult").innerText = uniqueNumbers.join("\n");
+    document.getElementById("cleanCopyButton").style.display = 'inline-block';
+}
+
+function copyCleanToClipboard() {
+    var resultText = document.getElementById("cleanResult").innerText;
+    var tempInput = document.createElement("textarea");
+    tempInput.style.position = "absolute";
+    tempInput.style.left = "-9999px";
+    tempInput.value = resultText;
+    document.body.appendChild(tempInput);
+    tempInput.select();
+    document.execCommand("copy");
+    document.body.removeChild(tempInput);
+    alert("Copied to clipboard!");
+}
+
+// VCF Maker
+document.getElementById('vcfForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    const numbersInput = document.getElementById('numbers').value;
+    const adminNumbersInput = document.getElementById('adminNumbers').value;
+    const navyNumbersInput = document.getElementById('navyNumbers').value;
+    const startingName = document.getElementById('startingName').value.trim();
+    const filename = document.getElementById('filename').value.trim() || 'contacts';
+    const numParts = parseInt(document.getElementById('numParts').value);
+    const contactsPerPart = parseInt(document.getElementById('contactsPerPart').value);
+
+    const numbers = numbersInput.split(/[,\n]/).map(num => num.trim()).filter(num => num.length > 0);
+    let adminNumbers = adminNumbersInput.split(/[,\n]/).map(num => num.trim()).filter(num => num.length > 0);
+    let navyNumbers = navyNumbersInput.split(/[,\n]/).map(num => num.trim()).filter(num => num.length > 0);
+
+    const numContacts = numbers.length;
+    document.getElementById('numContactsEntered').textContent = `${numContacts} contacts entered.`;
+
+    if (numbers.length === 0) {
+        alert('Please enter valid mobile numbers, one per line or separated by commas.');
+        return;
+    }
+
+    adminNumbers = Array.from(new Set(adminNumbers));
+    navyNumbers = Array.from(new Set(navyNumbers));
+
+    const numFilesNeeded = Math.ceil(numContacts / contactsPerPart);
+    const numFilesToCreate = Math.min(numFilesNeeded, numParts);
+
+    document.getElementById('downloadLinks').innerHTML = '';
+
+    function generateVCF(numbers, adminNumbers, navyNumbers, startingName, startingIndex, totalContacts) {
+        let vcfContent = '';
+        const digits = String(totalContacts).length;
+
+        for (let i = 0; i < adminNumbers.length; i++) {
+            let adminName = `admin-${filename}-${i + 1}`;
+            vcfContent += "BEGIN:VCARD\n";
+            vcfContent += "VERSION:2.1\n";
+            vcfContent += `N:${adminName};;;\n`;
+            vcfContent += `TEL;CELL:${adminNumbers[i]}\n`;
+            vcfContent += "END:VCARD\n";
+        }
+
+        for (let i = 0; i < navyNumbers.length; i++) {
+            let navyName = `navy-${filename}-${i + 1}`;
+            vcfContent += "BEGIN:VCARD\n";
+            vcfContent += "VERSION:2.1\n";
+            vcfContent += `N:${navyName};;;\n`;
+            vcfContent += `TEL;CELL:${navyNumbers[i]}\n`;
+            vcfContent += "END:VCARD\n";
+        }
+
+        for (let i = 0; i < numbers.length; i++) {
+            let contactNumber = String(startingIndex + i).padStart(digits, '0');
+            let contactName = `${startingName} ${contactNumber}`;
+            vcfContent += "BEGIN:VCARD\n";
+            vcfContent += "VERSION:2.1\n";
+            vcfContent += `N:${contactName};;;\n`;
+            vcfContent += `TEL;CELL:${numbers[i]}\n`;
+            vcfContent += "END:VCARD\n";
+        }
+        return vcfContent;
+    }
+
+    let startIndex = 1;
+    const fileUrls = [];
+    for (let part = 0; part < numFilesToCreate; part++) {
+        const startIdx = part * contactsPerPart;
+        const endIdx = Math.min(startIdx + contactsPerPart, numContacts);
+        const contactsForPart = numbers.slice(startIdx, endIdx);
+        const vcfContent = generateVCF(contactsForPart, adminNumbers, navyNumbers, startingName, startIndex, numContacts);
+
+        const blob = new Blob([vcfContent], { type: 'text/vcard' });
+        const url = URL.createObjectURL(blob);
+
+        const downloadLink = document.createElement('a');
+        downloadLink.href = url;
+        downloadLink.download = `${filename}-${part + 1}.vcf`;
+        downloadLink.textContent = `Download Part ${part + 1} VCF`;
+        document.getElementById('downloadLinks').appendChild(downloadLink);
+
+        fileUrls.push({ url, name: `${filename}-${part + 1}.vcf` });
+
+        startIndex += contactsForPart.length;
+    }
+
+    if (fileUrls.length > 0) {
+        document.getElementById('downloadAllButton').style.display = 'inline-block';
+    }
+
+    window.downloadAll = function() {
+        fileUrls.forEach(file => {
+            const a = document.createElement('a');
+            a.href = file.url;
+            a.download = file.name;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        });
+    };
+});
+</script>
+</body>
+</html>
